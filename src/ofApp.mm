@@ -2,51 +2,61 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-  ofSetFrameRate(60);
-  // ofSetWindowTitle("openFrameworks");
-  ofBackground(0);
-  this->mesh.setMode(ofPrimitiveMode::OF_PRIMITIVE_LINES);
+  ofSetVerticalSync(false);
+  ofEnableDepthTest();
+  ofEnableNormalizedTexCoords();
+  ofLogo.load("of.png");
+  ofSetLineWidth(10);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-  ofSeedRandom(39);
-  this->mesh.clear();
-  ofColor color;
-  auto noise_seed = ofRandom(1000);
-  for (int i = 0; i < 4; i++) {
-    for (int x = 0; x <= ofGetWindowWidth(); x += 5) {
-      auto base_y = ofNoise(noise_seed, x * 0.001 + (ofGetFrameNum() + i * 10000) * 0.002) * 820 - 100;
-      
-      auto y = base_y + ofMap(ofNoise(ofRandom(1000), ofGetFrameNum() * 0.005), 0, 1, -50, 50);
-      this->mesh.addVertex(glm::vec3(x, y, 0));
-      color.setHsb(ofMap(x, 0, ofGetWindowWidth(), 0, 255), 200, 255);
-      this->mesh.addColor(color);
-    }
-  }
-  for (int i = 0; i < this->mesh.getNumVertices(); i++) {
-    auto min_distance = 30;
-    for (int k = i + 1; k < this->mesh.getNumVertices(); k++) {
-      float distance = glm::distance(this->mesh.getVertex(i), this->mesh.getVertex(k));
-      if (distance < 30) {
-        this->mesh.addIndex(i);
-        this->mesh.addIndex(k);
-        if (distance < min_distance) {
-          min_distance = distance;
-        }
-      }
-    }
-    this->mesh.setColor(i, ofColor(this->mesh.getColor(i), ofMap(min_distance, 0, 30, 255, 0)));
-  }
+  
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-  this->mesh.drawWireframe();
-  for (int i = 0; i < this->mesh.getNumVertices(); i++) {
-    ofSetColor(this->mesh.getColor(i));
-    ofDrawCircle(this->mesh.getVertex(i), 2);
+  ofBackground(0, 0, 0);
+  
+  float movementSpeed = .1;
+  float cloudSize = ofGetWidth() / 2;
+  float maxBoxSize = 100;
+  float spacing = 1;
+  int boxCount = 100;
+  
+  cam.begin();
+  
+  for (int i = 0; i < boxCount; i++) {
+    ofPushMatrix();
+    
+    float t = (ofGetElapsedTimef() + i * spacing) * movementSpeed;
+    
+    glm::vec3 pos(
+             ofSignedNoise(t, 0, 0),
+             ofSignedNoise(0, t, 0),
+             ofSignedNoise(0, 0, t));
+    
+    float boxSize = maxBoxSize * ofNoise(pos.x, pos.y, pos.z);
+    
+    pos *= cloudSize;
+    ofRotateXDeg(pos.x);
+    ofRotateYDeg(pos.y);
+    ofRotateZDeg(pos.z);
+    
+    ofLogo.bind();
+    ofFill();
+    ofSetColor(255);
+    ofDrawBox(boxSize);
+    ofLogo.unbind();
+    
+    ofNoFill();
+    ofSetColor(ofColor::fromHsb(sinf(t) * 128 + 128, 255, 255));
+    ofDrawBox(boxSize * 1.1f);
+    
+    ofPopMatrix();
   }
+  
+  cam.end();
 }
 
 //--------------------------------------------------------------

@@ -13,5 +13,7 @@ int main() {
   settings.windowMode = OF_FULLSCREEN;
   ofCreateWindow(settings);
   
+  ofxtvOSViewController *viewController = new ofxtvOSViewController();
+  
   return ofRunApp(new ofApp);
 }

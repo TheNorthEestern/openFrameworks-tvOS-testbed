@@ -14,6 +14,8 @@ public:
   void gotfocus();
   void gotmemorywarning();
   
+  ofImage ofLogo;
+  ofLight light;
   ofEasyCam cam;
   ofMesh mesh;
 };
